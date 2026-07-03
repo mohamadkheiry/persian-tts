@@ -53,7 +53,10 @@ class MainActivity : AppCompatActivity() {
 
     private val voices = listOf(
         VoiceOption("گنجی", "ganji", "fa_IR-ganji-medium.onnx"),
-        VoiceOption("گایرو", "gyro", "fa_IR-gyro-medium.onnx")
+        VoiceOption("گایرو", "gyro", "fa_IR-gyro-medium.onnx"),
+        VoiceOption("امیر", "amir", "fa_IR-amir-medium.onnx"),
+        VoiceOption("گنجی (ادبی)", "ganji_adabi", "fa_IR-ganji_adabi-medium.onnx"),
+        VoiceOption("رضا ابراهیم", "reza_ibrahim", "fa_IR-reza_ibrahim-medium.onnx")
     )
 
     private var tts: OfflineTts? = null

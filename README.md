@@ -23,12 +23,19 @@
 
 ## صداهای موجود (bundle‌شده، آفلاین)
 
-هر دو صدا از مخزن [`rhasspy/piper-voices`](https://huggingface.co/rhasspy/piper-voices/tree/main/fa/fa_IR) روی HuggingFace گرفته شده‌اند (کیفیت medium):
+هر ۵ صدای فارسی موجود در مخزن [`rhasspy/piper-voices`](https://huggingface.co/rhasspy/piper-voices/tree/main/fa/fa_IR) روی HuggingFace بسته‌بندی شده‌اند (همگی کیفیت medium — این تمام صداهای فارسی‌ای است که Piper در حال حاضر دارد):
 
 | نام نمایشی | پوشه‌ی assets | منبع دانلود |
 |---|---|---|
-| گنجی (پیش‌فرض) | `app/src/main/assets/ganji/` | `https://huggingface.co/rhasspy/piper-voices/resolve/main/fa/fa_IR/ganji/medium/fa_IR-ganji-medium.onnx` (+ `.onnx.json`) |
-| گایرو | `app/src/main/assets/gyro/` | `https://huggingface.co/rhasspy/piper-voices/resolve/main/fa/fa_IR/gyro/medium/fa_IR-gyro-medium.onnx` (+ `.onnx.json`) |
+| گنجی (پیش‌فرض) | `app/src/main/assets/ganji/` | `.../fa/fa_IR/ganji/medium/fa_IR-ganji-medium.onnx` (+ `.onnx.json`) |
+| گایرو | `app/src/main/assets/gyro/` | `.../fa/fa_IR/gyro/medium/fa_IR-gyro-medium.onnx` (+ `.onnx.json`) |
+| امیر | `app/src/main/assets/amir/` | `.../fa/fa_IR/amir/medium/fa_IR-amir-medium.onnx` (+ `.onnx.json`) |
+| گنجی (ادبی) | `app/src/main/assets/ganji_adabi/` | `.../fa/fa_IR/ganji_adabi/medium/fa_IR-ganji_adabi-medium.onnx` (+ `.onnx.json`) |
+| رضا ابراهیم | `app/src/main/assets/reza_ibrahim/` | `.../fa/fa_IR/reza_ibrahim/medium/fa_IR-reza_ibrahim-medium.onnx` (+ `.onnx.json`) |
+
+(`...` = `https://huggingface.co/rhasspy/piper-voices/resolve/main`)
+
+> چون هر ۵ مدل + espeak-ng-data داخل APK بسته‌بندی شده‌اند، حجم فایل نصب حدود **۳۶۰ مگابایت** است.
 
 داده‌ی `espeak-ng-data` (لازم برای phonemization، شامل پشتیبانی فارسی `fa`) در `app/src/main/assets/espeak-ng-data/` بسته‌بندی شده است.
 
@@ -75,5 +82,5 @@ echo "sdk.dir=/path/to/Android/Sdk" > local.properties
 
 ## محدودیت‌های شناخته‌شده
 
-- حجم APK نسبتاً بالاست (~۱۶۰ مگابایت) چون دو مدل صوتی + espeak-ng-data + کتابخانه‌ی onnxruntime به‌صورت آفلاین بسته‌بندی شده‌اند.
+- حجم APK نسبتاً بالاست (~۳۶۰ مگابایت) چون هر ۵ مدل صوتی + espeak-ng-data + کتابخانه‌ی onnxruntime به‌صورت آفلاین بسته‌بندی شده‌اند.
 - این پروژه روی یک ماشین بدون شبیه‌ساز/دستگاه فیزیکی اندروید ساخته و build شده؛ صحت کد با خواندن دقیق و موفقیت `gradlew assembleDebug` تأیید شده، اما تست دستی پخش صدا روی دستگاه واقعی انجام نشده است.
