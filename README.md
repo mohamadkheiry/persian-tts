@@ -110,6 +110,26 @@ echo "sdk.dir=/path/to/Android/Sdk" > local.properties
 اگر شبکه‌ی شما به `dl.google.com` دسترسی ندارد (برخی شبکه‌ها/پراکسی‌ها این را بلاک می‌کنند)، `settings.gradle`
 از آینه‌ی `redirector.gvt1.com` به‌جای `google()` استفاده می‌کند — نیازی به تغییر دستی نیست مگر آن آینه هم در دسترس نباشد.
 
+### بیلد کاملاً بسته‌بندی‌شده (یک APK، بدون دانلود در زمان اجرا)
+
+بیلد پیش‌فرض بالا لاغر است و مدل‌ها را هنگام نیاز دانلود می‌کند. اگر یک APK کاملاً خودکفا (بدون نیاز
+به اینترنت حتی در اولین اجرا) می‌خواهید، مدل‌ها را قبل از build به `assets` کپی کنید — کد به‌طور
+خودکار تشخیص می‌دهد که مدل bundle شده و دانلود را کلاً رد می‌کند:
+
+```bash
+for v in amir ganji ganji_adabi gyro reza_ibrahim; do
+  mkdir -p "app/src/main/assets/$v"
+  cp "models/$v/fa_IR-$v-medium.onnx" "models/$v/tokens.txt" "app/src/main/assets/$v/"
+done
+mkdir -p app/src/main/assets/voice_clone app/src/main/assets/stt
+cp models/voice_clone/*.onnx app/src/main/assets/voice_clone/
+cp models/stt/*.onnx models/stt/tokens.txt app/src/main/assets/stt/
+./gradlew assembleDebug   # خروجی حدود ۱.۴۵ گیگابایت
+```
+
+این کپی‌ها را commit نکنید (`.gitignore` از قبل جلویشان را می‌گیرد) — همان فایل‌ها از قبل در `models/`
+با Git LFS نگه‌داری می‌شوند؛ تکرارشان در `assets` فقط فضای LFS ریپو را بی‌دلیل دوبرابر می‌کند.
+
 ### افزودن صدای جدید
 
 1. فایل `.onnx` و `.onnx.json` صدای موردنظر را از `rhasspy/piper-voices` دانلود کن.

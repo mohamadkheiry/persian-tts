@@ -128,15 +128,19 @@ class SttActivity : AppCompatActivity() {
 
     private fun loadEngine() {
         hideError()
+        val assetEncoderPath = "stt/whisper-turbo-encoder.int8.onnx"
+        val assetDecoderPath = "stt/whisper-turbo-decoder.int8.onnx"
+        val assetTokensPath = "stt/tokens.txt"
+        val bundled = com.example.persiantts.ModelDownloader.existsInAssets(applicationContext, assetEncoderPath)
+
         val destDir = com.example.persiantts.ModelDownloader.sttDestDir(applicationContext)
         val files = com.example.persiantts.ModelDownloader.sttModelFiles
 
         Thread {
             try {
-                // مدل Whisper دیگر داخل APK نیست (هم‌سو با معماری دانلود هنگام نیاز؛ بخش ۱۰
-                // CLAUDE.md)؛ اگر قبلاً دانلود نشده، اول با نوار پیشرفت درصدی دانلود می‌شود.
-                val needsDownload = !com.example.persiantts.ModelDownloader.isFullyDownloaded(destDir, files)
-                if (needsDownload) {
+                // اگر مدل Whisper داخل APK بسته‌بندی شده مستقیم از assets بارگذاری می‌شود؛ وگرنه
+                // طبق معماری on-demand (بخش ۱۰ CLAUDE.md) قبل از اولین استفاده دانلود می‌شود.
+                if (!bundled && !com.example.persiantts.ModelDownloader.isFullyDownloaded(destDir, files)) {
                     mainHandler.post { setDownloading(true, 0) }
                     com.example.persiantts.ModelDownloader.downloadAll(destDir, files) { progress ->
                         mainHandler.post { setDownloading(true, progress.percent) }
@@ -146,26 +150,45 @@ class SttActivity : AppCompatActivity() {
 
                 mainHandler.post { setBusy(true, getString(R.string.status_loading_voice)) }
 
-                val modelConfig = OfflineModelConfig(
-                    whisper = OfflineWhisperModelConfig(
-                        encoder = File(destDir, "whisper-turbo-encoder.int8.onnx").absolutePath,
-                        decoder = File(destDir, "whisper-turbo-decoder.int8.onnx").absolutePath,
-                        language = "fa",
-                        task = "transcribe"
-                    ),
-                    tokens = File(destDir, "tokens.txt").absolutePath,
-                    modelType = "whisper",
-                    numThreads = 2,
-                    debug = false,
-                    provider = "cpu"
-                )
+                val modelConfig: OfflineModelConfig
+                val recognizerAssetManager: android.content.res.AssetManager?
+                if (bundled) {
+                    modelConfig = OfflineModelConfig(
+                        whisper = OfflineWhisperModelConfig(
+                            encoder = assetEncoderPath,
+                            decoder = assetDecoderPath,
+                            language = "fa",
+                            task = "transcribe"
+                        ),
+                        tokens = assetTokensPath,
+                        modelType = "whisper",
+                        numThreads = 2,
+                        debug = false,
+                        provider = "cpu"
+                    )
+                    recognizerAssetManager = applicationContext.assets
+                } else {
+                    modelConfig = OfflineModelConfig(
+                        whisper = OfflineWhisperModelConfig(
+                            encoder = File(destDir, "whisper-turbo-encoder.int8.onnx").absolutePath,
+                            decoder = File(destDir, "whisper-turbo-decoder.int8.onnx").absolutePath,
+                            language = "fa",
+                            task = "transcribe"
+                        ),
+                        tokens = File(destDir, "tokens.txt").absolutePath,
+                        modelType = "whisper",
+                        numThreads = 2,
+                        debug = false,
+                        provider = "cpu"
+                    )
+                    recognizerAssetManager = null
+                }
                 val recognizerConfig = OfflineRecognizerConfig(
                     featConfig = FeatureConfig(sampleRate = WHISPER_SAMPLE_RATE, featureDim = 80),
                     modelConfig = modelConfig
                 )
-                // assetManager = null ⇒ مسیرهای بالا به‌عنوان مسیر مطلق فایل‌سیستم خوانده می‌شوند
-                // (همان الگوی newFromFile استفاده‌شده در MainActivity/VoiceCloneActivity).
-                val newRecognizer = OfflineRecognizer(assetManager = null, config = recognizerConfig)
+                // assetManager غیر-null ⇒ newFromAsset، null ⇒ newFromFile (تأیید در CLAUDE.md).
+                val newRecognizer = OfflineRecognizer(assetManager = recognizerAssetManager, config = recognizerConfig)
 
                 mainHandler.post {
                     if (isFinishing || isDestroyed) {

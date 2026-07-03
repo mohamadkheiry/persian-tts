@@ -72,6 +72,20 @@ object ModelDownloader {
     }
 
     /**
+     * آیا این فایل داخل assets بسته‌بندی شده (بیلد کاملاً آفلاین/بدون-دانلود)؟ چون AssetManager متد
+     * مستقیم exists ندارد، با تلاش برای باز کردن فایل چک می‌کنیم. اگر بله، دیگر نیازی به دانلود/
+     * فایل‌سیستم نیست — مستقیم با AssetManager بارگذاری می‌شود (سریع‌تر، بدون کپی به filesDir).
+     */
+    fun existsInAssets(context: Context, assetPath: String): Boolean {
+        return try {
+            context.assets.open(assetPath).close()
+            true
+        } catch (e: IOException) {
+            false
+        }
+    }
+
+    /**
      * بررسی می‌کند آیا همه‌ی فایل‌های داده‌شده از قبل در destDir با اندازه‌ی معتبر (>۰ بایت) موجودند.
      * این یک چک سریع بدون تماس شبکه‌ای است (برای تصمیم «نیاز به دانلود هست یا نه» قبل از نمایش UI).
      */

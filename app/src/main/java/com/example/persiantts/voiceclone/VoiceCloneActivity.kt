@@ -160,6 +160,14 @@ class VoiceCloneActivity : AppCompatActivity() {
 
     private fun loadEngines() {
         hideError()
+        val assetVoiceModelPath = "$BASE_VOICE_DIR/$BASE_VOICE_MODEL"
+        val assetVoiceTokensPath = "$BASE_VOICE_DIR/tokens.txt"
+        val voiceBundled = com.example.persiantts.ModelDownloader.existsInAssets(applicationContext, assetVoiceModelPath)
+
+        val assetCloneExtractPath = "voice_clone/tone_color_extract_model.onnx"
+        val assetCloneCloneModelPath = "voice_clone/tone_clone_model.onnx"
+        val cloneBundled = com.example.persiantts.ModelDownloader.existsInAssets(applicationContext, assetCloneExtractPath)
+
         val voiceDestDir = com.example.persiantts.ModelDownloader.voiceDestDir(applicationContext, BASE_VOICE_DIR)
         val voiceFiles = com.example.persiantts.ModelDownloader.voiceModelFiles(BASE_VOICE_DIR, BASE_VOICE_MODEL)
         val cloneDestDir = com.example.persiantts.ModelDownloader.voiceCloneDestDir(applicationContext)
@@ -167,11 +175,11 @@ class VoiceCloneActivity : AppCompatActivity() {
 
         Thread {
             try {
-                // این صفحه به دو دسته مدل نیاز دارد که دیگر داخل APK نیستند (بخش ۱۰ CLAUDE.md):
-                // ۱) صدای پایه‌ی گنجی (Piper) ۲) دو مدل ONNX مبدل تن صدا. هر دو قبل از اولین
-                // استفاده از این صفحه دانلود می‌شوند (با یک نوار پیشرفت درصدی مشترک).
-                val needsVoiceDownload = !com.example.persiantts.ModelDownloader.isFullyDownloaded(voiceDestDir, voiceFiles)
-                val needsCloneDownload = !com.example.persiantts.ModelDownloader.isFullyDownloaded(cloneDestDir, cloneFiles)
+                // این صفحه به دو دسته مدل نیاز دارد: ۱) صدای پایه‌ی گنجی (Piper) ۲) دو مدل ONNX
+                // مبدل تن صدا. اگر داخل APK بسته‌بندی شده باشند مستقیم از assets استفاده می‌شود؛
+                // وگرنه طبق معماری on-demand (بخش ۱۰ CLAUDE.md) قبل از اولین استفاده دانلود می‌شوند.
+                val needsVoiceDownload = !voiceBundled && !com.example.persiantts.ModelDownloader.isFullyDownloaded(voiceDestDir, voiceFiles)
+                val needsCloneDownload = !cloneBundled && !com.example.persiantts.ModelDownloader.isFullyDownloaded(cloneDestDir, cloneFiles)
 
                 if (needsVoiceDownload) {
                     mainHandler.post { setDownloading(true, 0) }
@@ -193,21 +201,47 @@ class VoiceCloneActivity : AppCompatActivity() {
 
                 val dataDirPath = com.example.persiantts.EspeakDataInstaller.ensure(applicationContext)
 
-                val modelConfig = OfflineTtsModelConfig(
-                    vits = OfflineTtsVitsModelConfig(
-                        model = File(voiceDestDir, BASE_VOICE_MODEL).absolutePath,
-                        lexicon = "",
-                        tokens = File(voiceDestDir, "tokens.txt").absolutePath,
-                        dataDir = dataDirPath
-                    ),
-                    numThreads = 2,
-                    debug = false,
-                    provider = "cpu"
-                )
+                val modelConfig: OfflineTtsModelConfig
+                val ttsAssetManager: android.content.res.AssetManager?
+                if (voiceBundled) {
+                    modelConfig = OfflineTtsModelConfig(
+                        vits = OfflineTtsVitsModelConfig(
+                            model = assetVoiceModelPath,
+                            lexicon = "",
+                            tokens = assetVoiceTokensPath,
+                            dataDir = dataDirPath
+                        ),
+                        numThreads = 2,
+                        debug = false,
+                        provider = "cpu"
+                    )
+                    ttsAssetManager = applicationContext.assets
+                } else {
+                    modelConfig = OfflineTtsModelConfig(
+                        vits = OfflineTtsVitsModelConfig(
+                            model = File(voiceDestDir, BASE_VOICE_MODEL).absolutePath,
+                            lexicon = "",
+                            tokens = File(voiceDestDir, "tokens.txt").absolutePath,
+                            dataDir = dataDirPath
+                        ),
+                        numThreads = 2,
+                        debug = false,
+                        provider = "cpu"
+                    )
+                    ttsAssetManager = null
+                }
                 val ttsConfig = OfflineTtsConfig(model = modelConfig)
-                // assetManager = null ⇒ sherpa-onnx مسیرهای بالا را مسیر مطلق فایل‌سیستم می‌خواند
-                // (newFromFile به‌جای newFromAsset؛ جزئیات تأیید در CLAUDE.md).
-                val tts = OfflineTts(assetManager = null, config = ttsConfig)
+                // assetManager غیر-null ⇒ newFromAsset، null ⇒ newFromFile (جزئیات تأیید در CLAUDE.md).
+                val tts = OfflineTts(assetManager = ttsAssetManager, config = ttsConfig)
+
+                // ToneColorConverter از ONNX Runtime خام استفاده می‌کند که فقط مسیر فایل‌سیستمِ
+                // واقعی می‌پذیرد (نه AssetManager)؛ اگر بسته‌بندی شده، یک‌بار از assets به همان
+                // مسیر مقصدی که دانلود هم از آن استفاده می‌کرد کپی می‌شود، سپس مثل حالت دانلود‌شده رفتار می‌شود.
+                if (cloneBundled && !com.example.persiantts.ModelDownloader.isFullyDownloaded(cloneDestDir, cloneFiles)) {
+                    if (!cloneDestDir.exists()) cloneDestDir.mkdirs()
+                    copyAssetFileTo(assetCloneExtractPath, File(cloneDestDir, "tone_color_extract_model.onnx"))
+                    copyAssetFileTo(assetCloneCloneModelPath, File(cloneDestDir, "tone_clone_model.onnx"))
+                }
                 val converter = ToneColorConverter(
                     extractModelPath = File(cloneDestDir, "tone_color_extract_model.onnx").absolutePath,
                     cloneModelPath = File(cloneDestDir, "tone_clone_model.onnx").absolutePath
@@ -632,6 +666,13 @@ class VoiceCloneActivity : AppCompatActivity() {
 
     private fun hideError() {
         cloneErrorText.visibility = View.GONE
+    }
+
+    /** یک فایل bundle‌شده در assets را به یک مسیر واقعی دیسک کپی می‌کند (برای ToneColorConverter). */
+    private fun copyAssetFileTo(assetPath: String, destFile: File) {
+        applicationContext.assets.open(assetPath).use { input ->
+            FileOutputStream(destFile).use { output -> input.copyTo(output) }
+        }
     }
 
     override fun onDestroy() {

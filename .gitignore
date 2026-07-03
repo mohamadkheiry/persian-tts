@@ -6,3 +6,20 @@ local.properties
 .idea/
 .DS_Store
 dl/
+
+# نسخه‌های bundle‌شده‌ی مدل‌ها برای بیلد محلیِ «کاملاً آفلاین/یک‌فایلی» (بدون دانلود در زمان اجرا).
+# این فایل‌ها از قبل در models/ این ریپو (Git LFS) وجود دارند؛ کپی‌کردن دوباره‌شان اینجا فضای LFS را
+# دوبرابر می‌کند بدون فایده — عمداً commit نمی‌شوند. روش بازسازی این کپی‌ها در بخش «بیلد کاملاً
+# بسته‌بندی‌شده» CLAUDE.md مستند شده.
+app/src/main/assets/ganji/
+app/src/main/assets/gyro/
+app/src/main/assets/amir/
+app/src/main/assets/ganji_adabi/
+app/src/main/assets/reza_ibrahim/
+app/src/main/assets/voice_clone/
+app/src/main/assets/stt/
+
+# مدل Gemma 3n (برای چت‌بات آینده) — عمداً هنوز commit نشده چون خودِ قابلیت چت‌بات هنوز ساخته نشده؛
+# اضافه‌کردن ۲.۹ گیگابایت به LFS برای یک فایل بدون مصرف‌کننده، فضای گران‌بها را هدر می‌دهد. وقتی
+# قابلیت چت‌بات واقعاً پیاده‌سازی شد، این فایل commit/push خواهد شد.
+models/gemma/

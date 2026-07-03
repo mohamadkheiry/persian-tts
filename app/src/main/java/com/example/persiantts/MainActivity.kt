@@ -155,14 +155,19 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadTtsEngine(voice: VoiceOption) {
         hideError()
+        val assetModelPath = "${voice.assetDir}/${voice.modelFileName}"
+        val assetTokensPath = "${voice.assetDir}/tokens.txt"
+        val bundled = ModelDownloader.existsInAssets(applicationContext, assetModelPath)
+
         val destDir = ModelDownloader.voiceDestDir(applicationContext, voice.assetDir)
         val modelFiles = ModelDownloader.voiceModelFiles(voice.assetDir, voice.modelFileName)
 
         Thread {
             try {
-                // مدل‌ها دیگر داخل APK بسته‌بندی نشده‌اند (بخش ۱۰ CLAUDE.md)؛ اگر این صدا هنوز
-                // دانلود نشده، اول با نمایش پیشرفتِ درصدیِ دانلود آن را می‌گیریم، سپس بارگذاری می‌کنیم.
-                if (!ModelDownloader.isFullyDownloaded(destDir, modelFiles)) {
+                // اگر این صدا داخل APK بسته‌بندی شده (بیلد کاملاً آفلاین/بدون‌نیاز-به-دانلود)،
+                // مستقیم از assets بارگذاری می‌شود. در غیر این صورت طبق معماری on-demand (بخش ۱۰
+                // CLAUDE.md) دانلود می‌شود.
+                if (!bundled && !ModelDownloader.isFullyDownloaded(destDir, modelFiles)) {
                     mainHandler.post { setDownloading(true, voice.displayName, 0) }
                     ModelDownloader.downloadAll(destDir, modelFiles) { progress ->
                         mainHandler.post { setDownloading(true, voice.displayName, progress.percent) }
@@ -178,25 +183,42 @@ class MainActivity : AppCompatActivity() {
                 // (این کپی بین MainActivity و VoiceCloneActivity مشترک و synchronized است.)
                 val dataDirPath = EspeakDataInstaller.ensure(applicationContext)
 
-                val modelFile = File(destDir, voice.modelFileName)
-                val tokensFile = File(destDir, "tokens.txt")
-
-                val modelConfig = OfflineTtsModelConfig(
-                    vits = OfflineTtsVitsModelConfig(
-                        model = modelFile.absolutePath,
-                        lexicon = "",
-                        tokens = tokensFile.absolutePath,
-                        dataDir = dataDirPath
-                    ),
-                    numThreads = 2,
-                    debug = false,
-                    provider = "cpu"
-                )
+                val modelConfig: OfflineTtsModelConfig
+                val ttsAssetManager: android.content.res.AssetManager?
+                if (bundled) {
+                    modelConfig = OfflineTtsModelConfig(
+                        vits = OfflineTtsVitsModelConfig(
+                            model = assetModelPath,
+                            lexicon = "",
+                            tokens = assetTokensPath,
+                            dataDir = dataDirPath
+                        ),
+                        numThreads = 2,
+                        debug = false,
+                        provider = "cpu"
+                    )
+                    ttsAssetManager = applicationContext.assets
+                } else {
+                    val modelFile = File(destDir, voice.modelFileName)
+                    val tokensFile = File(destDir, "tokens.txt")
+                    modelConfig = OfflineTtsModelConfig(
+                        vits = OfflineTtsVitsModelConfig(
+                            model = modelFile.absolutePath,
+                            lexicon = "",
+                            tokens = tokensFile.absolutePath,
+                            dataDir = dataDirPath
+                        ),
+                        numThreads = 2,
+                        debug = false,
+                        provider = "cpu"
+                    )
+                    ttsAssetManager = null
+                }
                 val config = OfflineTtsConfig(model = modelConfig)
-                // assetManager = null ⇒ binding داخلی sherpa-onnx مسیرهای بالا را به‌عنوان مسیر
-                // مطلق فایل‌سیستم می‌خواند (newFromFile به‌جای newFromAsset) — تأیید شده با
-                // decompile کردن classes.jar داخل sherpa-onnx.aar (بخش «سرشپا-آنکس» در CLAUDE.md).
-                val newTts = OfflineTts(assetManager = null, config = config)
+                // assetManager غیر-null ⇒ newFromAsset (مسیر نسبت به assets)، null ⇒ newFromFile
+                // (مسیر مطلق فایل‌سیستم) — تأیید شده با decompile کردن classes.jar داخل
+                // sherpa-onnx.aar (بخش «سرشپا-آنکس» در CLAUDE.md).
+                val newTts = OfflineTts(assetManager = ttsAssetManager, config = config)
 
                 mainHandler.post {
                     tts?.free()
