@@ -75,6 +75,7 @@ class VoiceCloneActivity : AppCompatActivity() {
     private lateinit var cloneErrorText: TextView
     private lateinit var cloneGenerateButton: MaterialButton
     private lateinit var cloneProgressSpinner: ProgressBar
+    private lateinit var cloneDownloadProgressBar: ProgressBar
     private lateinit var cloneStatusText: TextView
     private lateinit var clonePlaybackContainer: View
     private lateinit var clonePlayPauseButton: ImageButton
@@ -130,6 +131,7 @@ class VoiceCloneActivity : AppCompatActivity() {
         cloneErrorText = findViewById(R.id.cloneErrorText)
         cloneGenerateButton = findViewById(R.id.cloneGenerateButton)
         cloneProgressSpinner = findViewById(R.id.cloneProgressSpinner)
+        cloneDownloadProgressBar = findViewById(R.id.cloneDownloadProgressBar)
         cloneStatusText = findViewById(R.id.cloneStatusText)
         clonePlaybackContainer = findViewById(R.id.clonePlaybackContainer)
         clonePlayPauseButton = findViewById(R.id.clonePlayPauseButton)
@@ -157,17 +159,45 @@ class VoiceCloneActivity : AppCompatActivity() {
     }
 
     private fun loadEngines() {
-        setBusy(true, getString(R.string.status_loading_voice))
+        hideError()
+        val voiceDestDir = com.example.persiantts.ModelDownloader.voiceDestDir(applicationContext, BASE_VOICE_DIR)
+        val voiceFiles = com.example.persiantts.ModelDownloader.voiceModelFiles(BASE_VOICE_DIR, BASE_VOICE_MODEL)
+        val cloneDestDir = com.example.persiantts.ModelDownloader.voiceCloneDestDir(applicationContext)
+        val cloneFiles = com.example.persiantts.ModelDownloader.voiceCloneModelFiles
+
         Thread {
             try {
-                val assetManager = application.assets
+                // این صفحه به دو دسته مدل نیاز دارد که دیگر داخل APK نیستند (بخش ۱۰ CLAUDE.md):
+                // ۱) صدای پایه‌ی گنجی (Piper) ۲) دو مدل ONNX مبدل تن صدا. هر دو قبل از اولین
+                // استفاده از این صفحه دانلود می‌شوند (با یک نوار پیشرفت درصدی مشترک).
+                val needsVoiceDownload = !com.example.persiantts.ModelDownloader.isFullyDownloaded(voiceDestDir, voiceFiles)
+                val needsCloneDownload = !com.example.persiantts.ModelDownloader.isFullyDownloaded(cloneDestDir, cloneFiles)
+
+                if (needsVoiceDownload) {
+                    mainHandler.post { setDownloading(true, 0) }
+                    com.example.persiantts.ModelDownloader.downloadAll(voiceDestDir, voiceFiles) { progress ->
+                        mainHandler.post { setDownloading(true, progress.percent) }
+                    }
+                }
+                if (needsCloneDownload) {
+                    mainHandler.post { setDownloading(true, 0) }
+                    com.example.persiantts.ModelDownloader.downloadAll(cloneDestDir, cloneFiles) { progress ->
+                        mainHandler.post { setDownloading(true, progress.percent) }
+                    }
+                }
+                if (needsVoiceDownload || needsCloneDownload) {
+                    mainHandler.post { setDownloading(false, 100) }
+                }
+
+                mainHandler.post { setBusy(true, getString(R.string.status_loading_voice)) }
+
                 val dataDirPath = com.example.persiantts.EspeakDataInstaller.ensure(applicationContext)
 
                 val modelConfig = OfflineTtsModelConfig(
                     vits = OfflineTtsVitsModelConfig(
-                        model = "$BASE_VOICE_DIR/$BASE_VOICE_MODEL",
+                        model = File(voiceDestDir, BASE_VOICE_MODEL).absolutePath,
                         lexicon = "",
-                        tokens = "$BASE_VOICE_DIR/tokens.txt",
+                        tokens = File(voiceDestDir, "tokens.txt").absolutePath,
                         dataDir = dataDirPath
                     ),
                     numThreads = 2,
@@ -175,8 +205,13 @@ class VoiceCloneActivity : AppCompatActivity() {
                     provider = "cpu"
                 )
                 val ttsConfig = OfflineTtsConfig(model = modelConfig)
-                val tts = OfflineTts(assetManager = assetManager, config = ttsConfig)
-                val converter = ToneColorConverter(assetManager)
+                // assetManager = null ⇒ sherpa-onnx مسیرهای بالا را مسیر مطلق فایل‌سیستم می‌خواند
+                // (newFromFile به‌جای newFromAsset؛ جزئیات تأیید در CLAUDE.md).
+                val tts = OfflineTts(assetManager = null, config = ttsConfig)
+                val converter = ToneColorConverter(
+                    extractModelPath = File(cloneDestDir, "tone_color_extract_model.onnx").absolutePath,
+                    cloneModelPath = File(cloneDestDir, "tone_clone_model.onnx").absolutePath
+                )
 
                 mainHandler.post {
                     if (isFinishing || isDestroyed) {
@@ -190,9 +225,17 @@ class VoiceCloneActivity : AppCompatActivity() {
                         setBusy(false, getString(R.string.status_ready))
                     }
                 }
+            } catch (e: com.example.persiantts.ModelDownloadException) {
+                Log.e(TAG, "Failed to download voice clone models", e)
+                mainHandler.post {
+                    setDownloading(false, 0)
+                    setBusy(false, getString(R.string.status_ready))
+                    showError(e.message ?: getString(R.string.error_download_failed))
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to initialize voice clone engines", e)
                 mainHandler.post {
+                    setDownloading(false, 0)
                     setBusy(false, getString(R.string.status_ready))
                     showError(getString(R.string.error_clone_engine_init_failed))
                 }
@@ -564,6 +607,22 @@ class VoiceCloneActivity : AppCompatActivity() {
         recordButton.isEnabled = !busy
         pickFileButton.isEnabled = !busy
         cloneStatusText.text = statusMessage
+    }
+
+    /**
+     * نمایش/پنهان‌سازی نوار پیشرفت درصدیِ دانلود مدل‌ها — جدا از [cloneProgressSpinner]
+     * (که برای بارگذاری موتور/تولید گفتار نامعین است) تا وضعیت «دانلود» با «تولید»/«بارگذاری»
+     * قاطی نشود.
+     */
+    private fun setDownloading(downloading: Boolean, percent: Int) {
+        cloneDownloadProgressBar.visibility = if (downloading) View.VISIBLE else View.GONE
+        cloneDownloadProgressBar.progress = percent
+        cloneGenerateButton.isEnabled = !downloading
+        recordButton.isEnabled = !downloading
+        pickFileButton.isEnabled = !downloading
+        if (downloading) {
+            cloneStatusText.text = getString(R.string.status_downloading_voice_clone_models, percent)
+        }
     }
 
     private fun showError(message: String) {

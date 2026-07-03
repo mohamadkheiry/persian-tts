@@ -3,7 +3,6 @@ package com.example.persiantts.voiceclone
 import ai.onnxruntime.OnnxTensor
 import ai.onnxruntime.OrtEnvironment
 import ai.onnxruntime.OrtSession
-import android.content.res.AssetManager
 import java.nio.LongBuffer
 import kotlin.math.PI
 import kotlin.math.cos
@@ -31,8 +30,12 @@ import kotlin.math.sqrt
  * assets/ganji/fa_IR-ganji-medium.onnx.json → "sample_rate": 22050). یعنی صدای Piper نیازی
  * به resample شدن قبل از ورود به مبدل ندارد؛ فقط صدای مرجعِ کاربر (که ممکن است در هر نرخی
  * ضبط/انتخاب شده باشد) باید به ۲۲۰۵۰ هرتز resample شود.
+ *
+ * توجه: این دو مدل ONNX دیگر داخل assets بسته‌بندی نمی‌شوند — هنگام نیاز با [com.example.persiantts.ModelDownloader]
+ * به filesDir دانلود می‌شوند (بخش ۱۰ CLAUDE.md)، پس این کلاس مسیر مطلق فایل‌سیستم می‌گیرد،
+ * نه AssetManager.
  */
-class ToneColorConverter(assetManager: AssetManager) : AutoCloseable {
+class ToneColorConverter(extractModelPath: String, cloneModelPath: String) : AutoCloseable {
 
     companion object {
         const val SAMPLE_RATE = 22050
@@ -41,10 +44,6 @@ class ToneColorConverter(assetManager: AssetManager) : AutoCloseable {
         private const val WIN_LENGTH = 1024
         private const val TONE_EMBEDDING_SIZE = 256
         private const val DEFAULT_TAU = 0.3f
-
-        private const val MODEL_DIR = "voice_clone"
-        private const val TONE_EXTRACT_MODEL = "tone_color_extract_model.onnx"
-        private const val TONE_CLONE_MODEL = "tone_clone_model.onnx"
 
         /** پنجره‌ی Hann از پیش محاسبه‌شده (معادل torch.hann_window). */
         private val hannWindow: DoubleArray = DoubleArray(WIN_LENGTH) { i ->
@@ -57,17 +56,11 @@ class ToneColorConverter(assetManager: AssetManager) : AutoCloseable {
     private val cloneSession: OrtSession
 
     init {
-        val extractBytes = readAssetBytes(assetManager, "$MODEL_DIR/$TONE_EXTRACT_MODEL")
-        val cloneBytes = readAssetBytes(assetManager, "$MODEL_DIR/$TONE_CLONE_MODEL")
         val options = OrtSession.SessionOptions().apply {
             setIntraOpNumThreads(2)
         }
-        extractSession = env.createSession(extractBytes, options)
-        cloneSession = env.createSession(cloneBytes, options)
-    }
-
-    private fun readAssetBytes(assetManager: AssetManager, path: String): ByteArray {
-        assetManager.open(path).use { input -> return input.readBytes() }
+        extractSession = env.createSession(extractModelPath, options)
+        cloneSession = env.createSession(cloneModelPath, options)
     }
 
     /**

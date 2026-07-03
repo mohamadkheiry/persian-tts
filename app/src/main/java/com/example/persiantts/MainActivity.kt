@@ -2,7 +2,6 @@ package com.example.persiantts
 
 import android.content.ContentValues
 import android.content.Intent
-import android.content.res.AssetManager
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.net.Uri
@@ -68,6 +67,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var statusText: TextView
     private lateinit var convertButton: MaterialButton
     private lateinit var progressSpinner: ProgressBar
+    private lateinit var downloadProgressBar: ProgressBar
     private lateinit var playbackContainer: View
     private lateinit var playPauseButton: ImageButton
     private lateinit var playbackSeekBar: SeekBar
@@ -98,6 +98,7 @@ class MainActivity : AppCompatActivity() {
         statusText = findViewById(R.id.statusText)
         convertButton = findViewById(R.id.convertButton)
         progressSpinner = findViewById(R.id.progressSpinner)
+        downloadProgressBar = findViewById(R.id.downloadProgressBar)
         playbackContainer = findViewById(R.id.playbackContainer)
         playPauseButton = findViewById(R.id.playPauseButton)
         playbackSeekBar = findViewById(R.id.playbackSeekBar)
@@ -148,10 +149,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadTtsEngine(voice: VoiceOption) {
-        setBusy(true, getString(R.string.status_loading_voice))
+        hideError()
+        val destDir = ModelDownloader.voiceDestDir(applicationContext, voice.assetDir)
+        val modelFiles = ModelDownloader.voiceModelFiles(voice.assetDir, voice.modelFileName)
+
         Thread {
             try {
-                val assetManager: AssetManager = application.assets
+                // مدل‌ها دیگر داخل APK بسته‌بندی نشده‌اند (بخش ۱۰ CLAUDE.md)؛ اگر این صدا هنوز
+                // دانلود نشده، اول با نمایش پیشرفتِ درصدیِ دانلود آن را می‌گیریم، سپس بارگذاری می‌کنیم.
+                if (!ModelDownloader.isFullyDownloaded(destDir, modelFiles)) {
+                    mainHandler.post { setDownloading(true, voice.displayName, 0) }
+                    ModelDownloader.downloadAll(destDir, modelFiles) { progress ->
+                        mainHandler.post { setDownloading(true, voice.displayName, progress.percent) }
+                    }
+                    mainHandler.post { setDownloading(false, voice.displayName, 100) }
+                }
+
+                mainHandler.post { setBusy(true, getString(R.string.status_loading_voice)) }
 
                 // espeak-ng-data شامل فایل‌های باینری‌ست که موتور espeak-ng (کد C) باید
                 // با fopen مسیر واقعی روی دیسک باز کند؛ خواندن مستقیم از AssetManager
@@ -159,11 +173,14 @@ class MainActivity : AppCompatActivity() {
                 // (این کپی بین MainActivity و VoiceCloneActivity مشترک و synchronized است.)
                 val dataDirPath = EspeakDataInstaller.ensure(applicationContext)
 
+                val modelFile = File(destDir, voice.modelFileName)
+                val tokensFile = File(destDir, "tokens.txt")
+
                 val modelConfig = OfflineTtsModelConfig(
                     vits = OfflineTtsVitsModelConfig(
-                        model = "${voice.assetDir}/${voice.modelFileName}",
+                        model = modelFile.absolutePath,
                         lexicon = "",
-                        tokens = "${voice.assetDir}/tokens.txt",
+                        tokens = tokensFile.absolutePath,
                         dataDir = dataDirPath
                     ),
                     numThreads = 2,
@@ -171,16 +188,27 @@ class MainActivity : AppCompatActivity() {
                     provider = "cpu"
                 )
                 val config = OfflineTtsConfig(model = modelConfig)
-                val newTts = OfflineTts(assetManager = assetManager, config = config)
+                // assetManager = null ⇒ binding داخلی sherpa-onnx مسیرهای بالا را به‌عنوان مسیر
+                // مطلق فایل‌سیستم می‌خواند (newFromFile به‌جای newFromAsset) — تأیید شده با
+                // decompile کردن classes.jar داخل sherpa-onnx.aar (بخش «سرشپا-آنکس» در CLAUDE.md).
+                val newTts = OfflineTts(assetManager = null, config = config)
 
                 mainHandler.post {
                     tts?.free()
                     tts = newTts
                     setBusy(false, getString(R.string.status_ready))
                 }
+            } catch (e: ModelDownloadException) {
+                Log.e(TAG, "Failed to download voice model", e)
+                mainHandler.post {
+                    setDownloading(false, voice.displayName, 0)
+                    setBusy(false, getString(R.string.status_ready))
+                    showError(e.message ?: getString(R.string.error_download_failed))
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to initialize TTS engine", e)
                 mainHandler.post {
+                    setDownloading(false, voice.displayName, 0)
                     setBusy(false, getString(R.string.status_ready))
                     showError(getString(R.string.error_engine_init_failed))
                 }
@@ -386,6 +414,21 @@ class MainActivity : AppCompatActivity() {
         convertButton.isEnabled = !busy
         voiceSpinner.isEnabled = !busy
         statusText.text = statusMessage
+    }
+
+    /**
+     * نمایش/پنهان‌سازی نوار پیشرفت درصدیِ دانلود مدل — کاملاً جدا از [progressSpinner]
+     * (که برای بارگذاری موتور/تولید گفتار استفاده می‌شود) تا کاربر بفهمد الان «در حال دانلود»
+     * است نه «در حال تولید» یا «در حال بارگذاری».
+     */
+    private fun setDownloading(downloading: Boolean, voiceName: String, percent: Int) {
+        downloadProgressBar.visibility = if (downloading) View.VISIBLE else View.GONE
+        downloadProgressBar.progress = percent
+        convertButton.isEnabled = !downloading
+        voiceSpinner.isEnabled = !downloading
+        if (downloading) {
+            statusText.text = getString(R.string.status_downloading_voice, voiceName, percent)
+        }
     }
 
     private fun showError(message: String) {

@@ -75,6 +75,21 @@
             android:text="@string/btn_convert"
             android:textSize="16sp" />
 
+        <!-- نوار پیشرفت دانلود مدل: قطعی (درصدی)، جدا از اسپینر تولید گفتار پایین -->
+        <ProgressBar
+            android:id="@+id/downloadProgressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:indeterminate="false"
+            android:max="100"
+            android:progress="0"
+            android:visibility="gone"
+            tools:visibility="visible"
+            xmlns:tools="http://schemas.android.com/tools" />
+
+        <!-- اسپینر تولید/بارگذاری: نامعین، چون درصد دقیق سنتز/لود قابل‌اندازه‌گیری نیست -->
         <ProgressBar
             android:id="@+id/progressSpinner"
             style="?android:attr/progressBarStyleHorizontal"

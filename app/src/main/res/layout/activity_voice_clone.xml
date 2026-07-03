@@ -159,6 +159,19 @@
             android:text="@string/btn_clone_generate"
             android:textSize="16sp" />
 
+        <!-- نوار پیشرفت دانلود مدل: قطعی (درصدی)، جدا از اسپینر تولید/بارگذاری پایین -->
+        <ProgressBar
+            android:id="@+id/cloneDownloadProgressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:indeterminate="false"
+            android:max="100"
+            android:progress="0"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
         <ProgressBar
             android:id="@+id/cloneProgressSpinner"
             style="?android:attr/progressBarStyleHorizontal"

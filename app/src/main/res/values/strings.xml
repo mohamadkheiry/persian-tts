@@ -12,13 +12,19 @@
     <string name="error_empty_text">متنی وارد نشده است</string>
     <string name="error_synthesis_failed">تولید صدا با خطا مواجه شد</string>
     <string name="error_engine_init_failed">راه‌اندازی موتور گفتار با خطا مواجه شد</string>
-    <string name="status_generating">در حال تولید صدا…</string>
-    <string name="status_loading_voice">در حال آماده‌سازی صدای انتخاب‌شده…</string>
+    <string name="status_generating">در حال تولید گفتار…</string>
+    <string name="status_loading_voice">در حال بارگذاری موتور صدا…</string>
     <string name="status_ready">آماده</string>
     <string name="status_saved">فایل صوتی با موفقیت ذخیره شد</string>
     <string name="status_save_failed">ذخیره فایل صوتی ناموفق بود</string>
     <string name="voice_ganji">گنجی</string>
     <string name="voice_gyro">گایرو</string>
+
+    <!-- دانلود مدل‌ها هنگام نیاز (on-demand) -->
+    <string name="status_downloading_voice">در حال دانلود صدای «%1$s»… %2$d٪</string>
+    <string name="status_downloading_voice_clone_models">در حال دانلود مدل‌های شبیه‌سازی صدا… %1$d٪</string>
+    <string name="error_download_failed">دانلود مدل با خطا مواجه شد؛ اتصال اینترنت را بررسی کنید</string>
+    <string name="btn_retry_download">تلاش دوباره</string>
 
     <!-- شبیه‌سازی صدا (Voice Cloning) -->
     <string name="btn_open_voice_clone">شبیه‌سازی صدا (آزمایشی)</string>
@@ -47,3 +53,4 @@
     <string name="error_clone_engine_init_failed">راه‌اندازی موتور شبیه‌سازی صدا با خطا مواجه شد</string>
     <string name="error_clone_failed">شبیه‌سازی صدا با خطا مواجه شد</string>
 </resources>
+
