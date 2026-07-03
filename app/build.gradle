@@ -43,6 +43,16 @@ android {
     packagingOptions {
         jniLibs {
             useLegacyPackaging = true
+            // هم sherpa-onnx.aar و هم onnxruntime-android یک libonnxruntime.so در همان مسیر
+            // jni/<abi>/ دارند. به‌جای اعتماد به سازگاری نسخه‌ای ONNX Runtime (که طبق مستندات
+            // خودش فقط در یک جهت تضمین شده: کد قدیمی‌تر + so جدیدتر — نه برعکس)، نسخه‌ی
+            // onnxruntime-android زیر را دقیقاً برابر با نسخه‌ی واقعیِ bundle‌شده در
+            // sherpa-onnx.aar (۱.۲۴.۳ — تأیید‌شده با استخراج AAR و پیدا کردن
+            // commit id داخل خودِ .so، بخش ۵.۱ CLAUDE.md) نگه داشته‌ایم. با این کار هر دو
+            // مسیر (Piper از طریق libsherpa-onnx-c-api.so و ToneColorConverter از طریق
+            // ai.onnxruntime.*) دقیقاً از یک نسخه‌ی یکسان استفاده می‌کنند و هیچ‌کدام از دو so
+            // «برنده»ی pickFirst مهم نیست چون محتوایشان از نظر نسخه یکی است.
+            pickFirsts += ['lib/*/libonnxruntime.so', 'lib/*/libonnxruntime4j_jni.so']
         }
         resources {
             excludes += ['META-INF/*.kotlin_module']
@@ -65,6 +75,11 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+
+    // نسخه باید دقیقاً برابر با onnxruntime bundle‌شده در sherpa-onnx.aar باشد (۱.۲۴.۳)؛
+    // این نسخه را تغییر نده مگر AAR جدید sherpa-onnx را هم جایگزین کنی و نسخه‌ی واقعی
+    // bundle‌شده‌ی آن را دوباره تأیید کنی (روش تأیید در CLAUDE.md بخش ۵.۱ مستند است).
+    implementation 'com.microsoft.onnxruntime:onnxruntime-android:1.24.3'
     implementation(name: 'sherpa-onnx', ext: 'aar')
 
     testImplementation 'junit:junit:4.13.2'

@@ -73,6 +73,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var playbackSeekBar: SeekBar
     private lateinit var saveButton: MaterialButton
     private lateinit var shareButton: MaterialButton
+    private lateinit var openVoiceCloneButton: MaterialButton
 
     private var mediaPlayer: MediaPlayer? = null
     private var lastGeneratedFile: File? = null
@@ -102,6 +103,7 @@ class MainActivity : AppCompatActivity() {
         playbackSeekBar = findViewById(R.id.playbackSeekBar)
         saveButton = findViewById(R.id.saveButton)
         shareButton = findViewById(R.id.shareButton)
+        openVoiceCloneButton = findViewById(R.id.openVoiceCloneButton)
     }
 
     private fun setupVoiceSpinner() {
@@ -129,6 +131,9 @@ class MainActivity : AppCompatActivity() {
         playPauseButton.setOnClickListener { onPlayPauseClicked() }
         saveButton.setOnClickListener { onSaveClicked() }
         shareButton.setOnClickListener { onShareClicked() }
+        openVoiceCloneButton.setOnClickListener {
+            startActivity(Intent(this, com.example.persiantts.voiceclone.VoiceCloneActivity::class.java))
+        }
 
         playbackSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -151,7 +156,8 @@ class MainActivity : AppCompatActivity() {
                 // espeak-ng-data شامل فایل‌های باینری‌ست که موتور espeak-ng (کد C) باید
                 // با fopen مسیر واقعی روی دیسک باز کند؛ خواندن مستقیم از AssetManager
                 // پشتیبانی نمی‌شود. پس یک‌بار آن را از assets به حافظه‌ی داخلی کپی می‌کنیم.
-                val dataDirPath = ensureEspeakDataDir()
+                // (این کپی بین MainActivity و VoiceCloneActivity مشترک و synchronized است.)
+                val dataDirPath = EspeakDataInstaller.ensure(applicationContext)
 
                 val modelConfig = OfflineTtsModelConfig(
                     vits = OfflineTtsVitsModelConfig(
@@ -180,56 +186,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }.start()
-    }
-
-    /**
-     * پوشه‌ی espeak-ng-data را (در صورت نیاز) یک‌بار از assets به یک مسیر واقعی
-     * در حافظه‌ی داخلی برنامه کپی می‌کند و مسیر مطلق آن را برمی‌گرداند.
-     * این پوشه بین همه‌ی صداها مشترک است؛ اگر قبلاً کپی شده، دوباره کپی نمی‌شود.
-     */
-    private fun ensureEspeakDataDir(): String {
-        val destRoot = File(filesDir, "espeak-ng-data")
-        val markerFile = File(filesDir, "espeak-ng-data.copied")
-        if (destRoot.exists() && markerFile.exists()) {
-            return destRoot.absolutePath
-        }
-
-        if (destRoot.exists()) {
-            destRoot.deleteRecursively()
-        }
-        destRoot.mkdirs()
-        copyAssetDir("espeak-ng-data", destRoot)
-        markerFile.writeText("ok")
-        return destRoot.absolutePath
-    }
-
-    private fun copyAssetDir(assetPath: String, destDir: File) {
-        val assetManager = application.assets
-        val entries = assetManager.list(assetPath) ?: emptyArray()
-        if (entries.isEmpty()) {
-            // این یک فایل است، نه پوشه
-            copyAssetFile(assetPath, File(destDir.parentFile, destDir.name))
-            return
-        }
-
-        destDir.mkdirs()
-        for (entry in entries) {
-            val childAssetPath = "$assetPath/$entry"
-            val childEntries = assetManager.list(childAssetPath)
-            if (childEntries != null && childEntries.isNotEmpty()) {
-                copyAssetDir(childAssetPath, File(destDir, entry))
-            } else {
-                copyAssetFile(childAssetPath, File(destDir, entry))
-            }
-        }
-    }
-
-    private fun copyAssetFile(assetPath: String, destFile: File) {
-        application.assets.open(assetPath).use { input ->
-            FileOutputStream(destFile).use { output ->
-                input.copyTo(output)
-            }
-        }
     }
 
     private fun onConvertClicked() {

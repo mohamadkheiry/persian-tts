@@ -18,4 +18,31 @@
     <string name="status_save_failed">ذخیره فایل صوتی ناموفق بود</string>
     <string name="voice_ganji">گنجی</string>
     <string name="voice_gyro">گایرو</string>
+
+    <!-- شبیه‌سازی صدا (Voice Cloning) -->
+    <string name="btn_open_voice_clone">شبیه‌سازی صدا (آزمایشی)</string>
+    <string name="title_voice_clone">شبیه‌سازی صدا</string>
+    <string name="subtitle_voice_clone">یک نمونه صدا ضبط یا انتخاب کنید تا گفتار فارسی با همان تن صدا تولید شود (کاملاً آفلاین)</string>
+    <string name="label_reference_sample">نمونه صدای مرجع</string>
+    <string name="hint_reference_sample">برای بهترین نتیجه ۵ تا ۲۰ ثانیه صدای واضح و بدون نویز ضبط یا انتخاب کنید (حداقل قابل قبول: ۲ ثانیه)</string>
+    <string name="btn_start_record">شروع ضبط</string>
+    <string name="btn_stop_record">پایان ضبط</string>
+    <string name="btn_pick_file">انتخاب فایل صوتی</string>
+    <string name="status_no_reference">هنوز نمونه صدایی ثبت نشده است</string>
+    <string name="status_recording">در حال ضبط…</string>
+    <string name="status_reference_ready">نمونه صدا آماده است</string>
+    <string name="label_preview_reference">پیش‌گوش دادن نمونه</string>
+    <string name="label_clone_text">متن فارسی برای تبدیل با تن صدای نمونه</string>
+    <string name="btn_clone_generate">شبیه‌سازی و تولید صدا</string>
+    <string name="status_extracting_tone">در حال تحلیل تن صدای نمونه…</string>
+    <string name="status_synthesizing_base">در حال تولید گفتار پایه…</string>
+    <string name="status_converting_tone">در حال اعمال تن صدا…</string>
+    <string name="error_no_reference">ابتدا یک نمونه صدا ضبط یا انتخاب کنید</string>
+    <string name="error_reference_too_short">نمونه صدا خیلی کوتاه است؛ حداقل ۲ ثانیه صدای واضح لازم است</string>
+    <string name="error_reference_silent">نمونه صدا سکوت به نظر می‌رسد؛ لطفاً نمونه‌ای با صدای واضح ضبط یا انتخاب کنید</string>
+    <string name="error_record_permission_denied">برای ضبط صدا باید دسترسی میکروفون را اجازه دهید</string>
+    <string name="error_record_failed">ضبط صدا با خطا مواجه شد</string>
+    <string name="error_pick_file_failed">خواندن فایل صوتی انتخاب‌شده ناموفق بود؛ لطفاً فایل دیگری را امتحان کنید</string>
+    <string name="error_clone_engine_init_failed">راه‌اندازی موتور شبیه‌سازی صدا با خطا مواجه شد</string>
+    <string name="error_clone_failed">شبیه‌سازی صدا با خطا مواجه شد</string>
 </resources>

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
@@ -15,28 +16,112 @@
         android:gravity="start">
 
         <TextView
-            android:id="@+id/titleText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:text="@string/title_main"
+            android:text="@string/title_voice_clone"
             android:textSize="22sp"
             android:textStyle="bold"
             android:textColor="@color/purple_700"
-            android:layout_marginBottom="20dp" />
+            android:layout_marginBottom="8dp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/label_voice"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/subtitle_voice_clone"
+            android:textSize="13sp"
+            android:gravity="center"
+            android:layout_marginBottom="20dp" />
+
+        <!-- بخش نمونه صدای مرجع -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_reference_sample"
             android:textSize="16sp"
+            android:textStyle="bold"
             android:layout_marginBottom="6dp" />
 
-        <Spinner
-            android:id="@+id/voiceSpinner"
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/hint_reference_sample"
+            android:textSize="12sp"
+            android:layout_marginBottom="10dp" />
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginBottom="16dp" />
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/recordButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="@string/btn_start_record" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/pickFileButton"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="@string/btn_pick_file" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/referenceStatusText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textSize="13sp"
+            android:text="@string/status_no_reference" />
+
+        <LinearLayout
+            android:id="@+id/referencePlaybackContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="6dp"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <ImageButton
+                android:id="@+id/referencePlayButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@android:color/transparent"
+                android:src="@android:drawable/ic_media_play"
+                android:contentDescription="@string/btn_play" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:text="@string/label_preview_reference"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#E0E0E0"
+            android:layout_marginTop="18dp"
+            android:layout_marginBottom="14dp" />
+
+        <!-- متن فارسی -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_clone_text"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="6dp" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
@@ -45,11 +130,11 @@
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/inputText"
+                android:id="@+id/cloneInputText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:minLines="6"
-                android:maxLines="12"
+                android:minLines="5"
+                android:maxLines="10"
                 android:gravity="top|start"
                 android:textDirection="rtl"
                 android:textAlignment="viewStart"
@@ -57,26 +142,25 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
-            android:id="@+id/errorText"
+            android:id="@+id/cloneErrorText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/error_red"
             android:textSize="14sp"
             android:layout_marginTop="8dp"
             android:visibility="gone"
-            tools:visibility="visible"
-            xmlns:tools="http://schemas.android.com/tools" />
+            tools:visibility="visible" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/convertButton"
+            android:id="@+id/cloneGenerateButton"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:layout_marginTop="16dp"
-            android:text="@string/btn_convert"
+            android:text="@string/btn_clone_generate"
             android:textSize="16sp" />
 
         <ProgressBar
-            android:id="@+id/progressSpinner"
+            android:id="@+id/cloneProgressSpinner"
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -85,7 +169,7 @@
             android:visibility="gone" />
 
         <TextView
-            android:id="@+id/statusText"
+            android:id="@+id/cloneStatusText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
@@ -94,7 +178,7 @@
             android:text="@string/status_ready" />
 
         <LinearLayout
-            android:id="@+id/playbackContainer"
+            android:id="@+id/clonePlaybackContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -108,7 +192,7 @@
                 android:gravity="center_vertical">
 
                 <ImageButton
-                    android:id="@+id/playPauseButton"
+                    android:id="@+id/clonePlayPauseButton"
                     android:layout_width="56dp"
                     android:layout_height="56dp"
                     android:background="@android:color/transparent"
@@ -116,7 +200,7 @@
                     android:contentDescription="@string/btn_play" />
 
                 <SeekBar
-                    android:id="@+id/playbackSeekBar"
+                    android:id="@+id/clonePlaybackSeekBar"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -130,7 +214,7 @@
                 android:layout_marginTop="12dp">
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/saveButton"
+                    android:id="@+id/cloneSaveButton"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -139,7 +223,7 @@
                     android:text="@string/btn_save" />
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/shareButton"
+                    android:id="@+id/cloneShareButton"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -148,14 +232,6 @@
                     android:text="@string/btn_share" />
             </LinearLayout>
         </LinearLayout>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/openVoiceCloneButton"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
-            android:text="@string/btn_open_voice_clone" />
 
     </LinearLayout>
 </ScrollView>

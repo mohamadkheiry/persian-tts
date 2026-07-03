@@ -16,6 +16,11 @@ import onnx
 
 def add_meta_data(filename, meta_data):
     model = onnx.load(filename)
+    # جلوگیری از تزریق تکراری متادیتا اگر اسکریپت دوباره روی یک فایل از قبل تبدیل‌شده اجرا شود
+    # (onnx.checker.check_model کلیدهای تکراری در metadata_props را نامعتبر می‌داند).
+    existing_keys = {m.key for m in model.metadata_props}
+    if existing_keys.intersection(meta_data.keys()):
+        del model.metadata_props[:]
     for key, value in meta_data.items():
         meta = model.metadata_props.add()
         meta.key = key
@@ -35,7 +40,11 @@ def main():
     # sherpa-onnx expects a file literally named tokens.txt per model dir
     import os
     tokens_path = os.path.join(os.path.dirname(onnx_path), "tokens.txt")
-    with open(tokens_path, "w", encoding="utf-8") as f:
+    # newline="\n" صراحتاً لازم است: در ویندوز، حالت متنی پیش‌فرض "w" هر \n را به \r\n تبدیل
+    # می‌کند. پارسر C++ سمت sherpa-onnx خط را با split روی فاصله می‌خواند و اگر \r باقی بماند،
+    # به انتهای عدد شناسه (id) می‌چسبد و تبدیل عدد را با کرش خاتمه می‌دهد (این دقیقاً علت کرش
+    # صداهای amir/ganji_adabi/reza_ibrahim بود که tokens.txtشان روی ویندوز و با CRLF تولید شده بود).
+    with open(tokens_path, "w", encoding="utf-8", newline="\n") as f:
         for s, i in id_map.items():
             f.write("%s %d\n" % (s, i[0]))
     print("Generated", tokens_path)
