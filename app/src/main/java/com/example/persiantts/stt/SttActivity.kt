@@ -46,12 +46,12 @@ private const val TAG = "SttActivity"
  *  ۲. چون Whisper دقیقاً ۱۶۰۰۰ هرتز مونو انتظار دارد، نمونه‌ها با یک resample خطی ساده به ۱۶۰۰۰
  *     هرتز تبدیل می‌شوند (مشابه resampleLinear در ToneColorConverter، اما چون آن متد private و
  *     مخصوص هدف ۲۲۰۵۰ است، این‌جا نسخه‌ی معادل و عمومی‌تر بازنویسی شده).
- *  ۳. مدل Whisper-base (int8، از طریق sherpa-onnx OfflineRecognizer) گفتار فارسی را به متن تبدیل
- *     می‌کند (language="fa", task="transcribe").
+ *  ۳. مدل Whisper large-v3-turbo (int8، از طریق sherpa-onnx OfflineRecognizer) گفتار فارسی را به
+ *     متن تبدیل می‌کند (language="fa", task="transcribe").
  *
- * منبع مدل: sherpa-onnx Whisper "base" (چندزبانه، int8) — csukuangfj/sherpa-onnx-whisper-base
- * روی HuggingFace. جزئیات کامل انتخاب مدل (چرا Whisper به‌جای Vosk، چرا base به‌جای tiny/small/...)
- * در بخش «تبدیل گفتار به نوشتار» CLAUDE.md مستند شده.
+ * منبع مدل: sherpa-onnx Whisper "large-v3-turbo" (چندزبانه، decoder هرس‌شده‌ی large-v3، int8) —
+ * csukuangfj/sherpa-onnx-whisper-turbo روی HuggingFace. جزئیات کامل انتخاب مدل (چرا Whisper به‌جای
+ * Vosk، چرا turbo به‌جای base/tiny/...) در بخش «تبدیل گفتار به نوشتار» CLAUDE.md مستند شده.
  */
 class SttActivity : AppCompatActivity() {
 
@@ -148,8 +148,8 @@ class SttActivity : AppCompatActivity() {
 
                 val modelConfig = OfflineModelConfig(
                     whisper = OfflineWhisperModelConfig(
-                        encoder = File(destDir, "whisper-base-encoder.int8.onnx").absolutePath,
-                        decoder = File(destDir, "whisper-base-decoder.int8.onnx").absolutePath,
+                        encoder = File(destDir, "whisper-turbo-encoder.int8.onnx").absolutePath,
+                        decoder = File(destDir, "whisper-turbo-decoder.int8.onnx").absolutePath,
                         language = "fa",
                         task = "transcribe"
                     ),

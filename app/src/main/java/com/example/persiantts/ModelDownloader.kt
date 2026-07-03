@@ -260,19 +260,21 @@ object ModelDownloader {
         )
     )
 
-    /** پوشه‌ی مقصد مدل STT (تشخیص گفتار فارسی، Whisper base) در filesDir. */
+    /** پوشه‌ی مقصد مدل STT (تشخیص گفتار فارسی، Whisper large-v3-turbo) در filesDir. */
     fun sttDestDir(context: Context): File =
         File(context.filesDir, "stt")
 
+    // Whisper large-v3-turbo (نسخه‌ی decoder-هرس‌شده‌ی large-v3، به‌همان‌اندازه چندزبانه ولی چند
+    // برابر سریع‌تر روی CPU) — به‌جای base، طبق درخواست کاربر برای بهترین دقت/سرعت با گوشی ۱۶ گیگ رم.
     val sttModelFiles: List<ModelFile> = listOf(
         ModelFile(
-            repoPath = "models/stt/whisper-base-encoder.int8.onnx",
-            destFileName = "whisper-base-encoder.int8.onnx",
+            repoPath = "models/stt/whisper-turbo-encoder.int8.onnx",
+            destFileName = "whisper-turbo-encoder.int8.onnx",
             isLfs = true
         ),
         ModelFile(
-            repoPath = "models/stt/whisper-base-decoder.int8.onnx",
-            destFileName = "whisper-base-decoder.int8.onnx",
+            repoPath = "models/stt/whisper-turbo-decoder.int8.onnx",
+            destFileName = "whisper-turbo-decoder.int8.onnx",
             isLfs = true
         ),
         ModelFile(
