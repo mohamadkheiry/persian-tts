@@ -13,6 +13,7 @@
     <string name="error_synthesis_failed">تولید صدا با خطا مواجه شد</string>
     <string name="error_engine_init_failed">راه‌اندازی موتور گفتار با خطا مواجه شد</string>
     <string name="status_generating">در حال تولید صدا…</string>
+    <string name="status_loading_voice">در حال آماده‌سازی صدای انتخاب‌شده…</string>
     <string name="status_ready">آماده</string>
     <string name="status_saved">فایل صوتی با موفقیت ذخیره شد</string>
     <string name="status_save_failed">ذخیره فایل صوتی ناموفق بود</string>

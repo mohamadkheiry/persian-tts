@@ -148,7 +148,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadTtsEngine(voice: VoiceOption) {
-        setBusy(true, getString(R.string.status_generating))
+        setBusy(true, getString(R.string.status_loading_voice))
         Thread {
             try {
                 val assetManager: AssetManager = application.assets

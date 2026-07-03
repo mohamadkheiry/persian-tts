@@ -157,7 +157,7 @@ class VoiceCloneActivity : AppCompatActivity() {
     }
 
     private fun loadEngines() {
-        setBusy(true, getString(R.string.status_generating))
+        setBusy(true, getString(R.string.status_loading_voice))
         Thread {
             try {
                 val assetManager = application.assets
