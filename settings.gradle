@@ -1,0 +1,27 @@
+pluginManagement {
+    repositories {
+        maven {
+            // dl.google.com is unreachable (returns 404 for all paths) on this
+            // network; Google's CDN redirector host serves the same Maven
+            // repository content and works reliably.
+            url = uri("https://redirector.gvt1.com/edgedl/android/maven2/")
+        }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        maven {
+            url = uri("https://redirector.gvt1.com/edgedl/android/maven2/")
+        }
+        mavenCentral()
+        flatDir {
+            dirs("app/libs")
+        }
+    }
+}
+
+rootProject.name = "PersianTTS"
+include(":app")

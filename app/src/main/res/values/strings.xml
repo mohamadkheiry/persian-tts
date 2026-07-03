@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">گفتار فارسی</string>
+    <string name="title_main">تبدیل متن فارسی به گفتار</string>
+    <string name="label_voice">انتخاب صدا</string>
+    <string name="hint_text">متن فارسی خود را اینجا بنویسید…</string>
+    <string name="btn_convert">تبدیل به صوت</string>
+    <string name="btn_play">پخش</string>
+    <string name="btn_pause">توقف موقت</string>
+    <string name="btn_save">ذخیره</string>
+    <string name="btn_share">اشتراک‌گذاری</string>
+    <string name="error_empty_text">متنی وارد نشده است</string>
+    <string name="error_synthesis_failed">تولید صدا با خطا مواجه شد</string>
+    <string name="error_engine_init_failed">راه‌اندازی موتور گفتار با خطا مواجه شد</string>
+    <string name="status_generating">در حال تولید صدا…</string>
+    <string name="status_ready">آماده</string>
+    <string name="status_saved">فایل صوتی با موفقیت ذخیره شد</string>
+    <string name="status_save_failed">ذخیره فایل صوتی ناموفق بود</string>
+    <string name="voice_ganji">گنجی</string>
+    <string name="voice_gyro">گایرو</string>
+</resources>
