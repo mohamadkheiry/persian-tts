@@ -259,4 +259,26 @@ object ModelDownloader {
             isLfs = true
         )
     )
+
+    /** پوشه‌ی مقصد مدل STT (تشخیص گفتار فارسی، Whisper base) در filesDir. */
+    fun sttDestDir(context: Context): File =
+        File(context.filesDir, "stt")
+
+    val sttModelFiles: List<ModelFile> = listOf(
+        ModelFile(
+            repoPath = "models/stt/whisper-base-encoder.int8.onnx",
+            destFileName = "whisper-base-encoder.int8.onnx",
+            isLfs = true
+        ),
+        ModelFile(
+            repoPath = "models/stt/whisper-base-decoder.int8.onnx",
+            destFileName = "whisper-base-decoder.int8.onnx",
+            isLfs = true
+        ),
+        ModelFile(
+            repoPath = "models/stt/tokens.txt",
+            destFileName = "tokens.txt",
+            isLfs = false  // tokens.txt یک فایل متنی معمولی است، مثل بقیه‌ی tokens.txt های صداهای Piper
+        )
+    )
 }

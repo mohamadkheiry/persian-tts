@@ -52,5 +52,21 @@
     <string name="error_pick_file_failed">خواندن فایل صوتی انتخاب‌شده ناموفق بود؛ لطفاً فایل دیگری را امتحان کنید</string>
     <string name="error_clone_engine_init_failed">راه‌اندازی موتور شبیه‌سازی صدا با خطا مواجه شد</string>
     <string name="error_clone_failed">شبیه‌سازی صدا با خطا مواجه شد</string>
+
+    <!-- تبدیل گفتار به نوشتار (Speech-to-Text) -->
+    <string name="btn_open_stt">تبدیل گفتار به نوشتار</string>
+    <string name="title_stt">تبدیل گفتار به نوشتار</string>
+    <string name="subtitle_stt">یک نمونه صدا ضبط یا انتخاب کنید تا متن فارسی گفتار آن نمایش داده شود (کاملاً آفلاین)</string>
+    <string name="status_downloading_stt_model">در حال دانلود مدل تشخیص گفتار… %1$d٪</string>
+    <string name="status_transcribing">در حال تبدیل گفتار به متن…</string>
+    <string name="status_stt_ready">آماده</string>
+    <string name="status_no_transcript">هنوز متنی تولید نشده است</string>
+    <string name="btn_copy_transcript">کپی</string>
+    <string name="status_copied">متن در کلیپ‌بورد کپی شد</string>
+    <string name="error_stt_engine_init_failed">راه‌اندازی موتور تشخیص گفتار با خطا مواجه شد</string>
+    <string name="error_stt_empty_audio">صدای ضبط‌شده/انتخاب‌شده خیلی کوتاه است</string>
+    <string name="error_stt_silent_audio">صدای ضبط‌شده/انتخاب‌شده سکوت به نظر می‌رسد؛ لطفاً نمونه‌ای با صدای واضح ضبط یا انتخاب کنید</string>
+    <string name="error_transcription_failed">تبدیل گفتار به متن با خطا مواجه شد یا متنی تشخیص داده نشد</string>
+    <string name="label_transcript_output">متن تشخیص‌داده‌شده</string>
 </resources>
 

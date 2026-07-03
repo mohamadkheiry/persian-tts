@@ -74,6 +74,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var saveButton: MaterialButton
     private lateinit var shareButton: MaterialButton
     private lateinit var openVoiceCloneButton: MaterialButton
+    private lateinit var openSttButton: MaterialButton
 
     private var mediaPlayer: MediaPlayer? = null
     private var lastGeneratedFile: File? = null
@@ -105,6 +106,7 @@ class MainActivity : AppCompatActivity() {
         saveButton = findViewById(R.id.saveButton)
         shareButton = findViewById(R.id.shareButton)
         openVoiceCloneButton = findViewById(R.id.openVoiceCloneButton)
+        openSttButton = findViewById(R.id.openSttButton)
     }
 
     private fun setupVoiceSpinner() {
@@ -134,6 +136,9 @@ class MainActivity : AppCompatActivity() {
         shareButton.setOnClickListener { onShareClicked() }
         openVoiceCloneButton.setOnClickListener {
             startActivity(Intent(this, com.example.persiantts.voiceclone.VoiceCloneActivity::class.java))
+        }
+        openSttButton.setOnClickListener {
+            startActivity(Intent(this, com.example.persiantts.stt.SttActivity::class.java))
         }
 
         playbackSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
